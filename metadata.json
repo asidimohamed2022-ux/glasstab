@@ -1,0 +1,6 @@
+{
+  "name": "Glass Tap",
+  "description": "A minimalist, hyper-casual 2D game where you tap and hold to fill a glass to the target level.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
