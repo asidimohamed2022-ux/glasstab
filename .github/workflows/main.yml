@@ -28,12 +28,9 @@ jobs:
       - name: Create dummy env
         run: echo "GEMINI_API_KEY=mock_key" > .env
 
-      # This line fixes the exit code 127 error by giving the build script permission to run
-      - name: Make Gradlew Executable
-        run: chmod +x gradlew
-
+      # We switched from ./gradlew to the global gradle command here
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
