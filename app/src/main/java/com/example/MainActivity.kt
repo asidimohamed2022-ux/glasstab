@@ -61,6 +61,73 @@ class MainActivity : ComponentActivity() {
 
   private fun loadRewardedAd() {
     val adRequest = AdRequest.Builder().build()
+    
+    // Put your real live AdMob Rewarded unit ID here
+    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021
+"
+
+    RewardedAd.load(
+      this,
+      myAdUnitId,
+      adRequest,
+      object : RewardedAdLoadCallback() {
+        override fun onAdFailedToLoad(adError: LoadAdError) {
+          Log.e(TAG, "Ad failed to load: ${adError.message}")
+          rewardedAd = null
+          gameViewModel.isAdReady = false
+        }
+
+        override fun onAdLoaded(ad: RewardedAd) {
+          Log.d(TAG, "Ad loaded successfully.")
+          rewardedAd = ad
+          gameViewModel.isAdReady = true
+
+          ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+              Log.d(TAG, "Ad dismissed by user.")
+              rewardedAd = null
+              gameViewModel.isAdReady = false
+              loadRewardedAd()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+              Log.e(TAG, "Ad failed to show: ${adError.message}")
+              rewardedAd = null
+              gameViewModel.isAdReady = false
+              loadRewardedAd()
+            }
+          }
+        }
+      }
+    )
+  }
+}      Log.d(TAG, "Mobile Ads SDK Initialized.")
+      loadRewardedAd()
+    }
+
+    // Set Ad Callback trigger on ViewModel
+    gameViewModel.onShowAdRequested = {
+      rewardedAd?.let { ad ->
+        ad.show(this) { rewardItem ->
+          Log.d(TAG, "Rewarded callback triggered. Earned reward: ${rewardItem.amount}")
+          gameViewModel.onAdRewardCompleted()
+        }
+      } ?: run {
+        Log.e(TAG, "Ad was not loaded when show requested.")
+        gameViewModel.isAdReady = false
+        loadRewardedAd()
+      }
+    }
+
+    setContent {
+      MyApplicationTheme {
+        GameScreen(viewModel = gameViewModel)
+      }
+    }
+  }
+
+  private fun loadRewardedAd() {
+    val adRequest = AdRequest.Builder().build()
     val myAdUnitId = "ca-app-pub-3940256099942544/5224354917"
 
     RewardedAd.load(
