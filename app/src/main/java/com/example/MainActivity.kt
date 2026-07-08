@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
   private fun loadRewardedAd() {
     val adRequest = AdRequest.Builder().build()
-    val myAdUnitId = "ca-app-pub-3940256099942544/5224354917"
+    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021"
 
     RewardedAd.load(
       this,
@@ -193,7 +193,8 @@ class MainActivity : ComponentActivity() {
     val adRequest = AdRequest.Builder().build()
     
     // Put your real AdMob Ad Unit ID here inside the quotes (e.g., "ca-app-pub-xxx/yyy")
-    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021"
+    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021
+"
 
     RewardedAd.load(
       this,
