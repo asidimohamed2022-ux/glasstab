@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.example.GlassTapApplication
 import com.example.ui.GameScreen
 import com.example.ui.GameViewModel
 import com.example.ui.GameViewModelFactory
@@ -62,7 +63,7 @@ class MainActivity : ComponentActivity() {
     val adRequest = AdRequest.Builder().build()
     
     // Put your real AdMob Ad Unit ID here inside the quotes (e.g., "ca-app-pub-xxx/yyy")
-    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021
+    val myAdUnitId = "ca-app-pub-9911132333919550/3319877021"
 
     RewardedAd.load(
       this,
@@ -99,50 +100,4 @@ class MainActivity : ComponentActivity() {
       }
     )
   }
-}                    if (rewardedAd != null) {
-                        rewardedAd?.show(this@MainActivity) { rewardItem ->
-                            val rewardAmount = rewardItem.amount
-                            val rewardType = rewardItem.type
-                            Log.d(TAG, "User earned the reward: $rewardAmount $rewardType")
-                            adStatus = "Reward Earned!"
-                            loadRewardedAd() // Load the next ad
-                        }
-                    } else {
-                        Log.d(TAG, "The rewarded ad wasn't ready yet.")
-                    }
-                }, enabled = rewardedAd != null) {
-                    Text(text = if (rewardedAd != null) "Watch Ad for Reward" else adStatus)
-                }
-            }
-        }
-
-        // 1. Initialize the Mobile Ads SDK
-        MobileAds.initialize(this) { initializationStatus ->
-            Log.d(TAG, "Initialization complete: $initializationStatus")
-            runOnUiThread {
-                adStatus = "Loading Ad..."
-                loadRewardedAd()
-            }
-        }
-    }
-
-    private fun loadRewardedAd() {
-        val adRequest = AdRequest.Builder().build()
-        // Using Google's official public test rewarded ad unit ID
-        val testAdUnitId = "ca-app-pub-3940256099942544/5224354917"
-
-        RewardedAd.load(this, testAdUnitId, adRequest, object : RewardedAdLoadCallback() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                Log.d(TAG, adError.toString())
-                rewardedAd = null
-                adStatus = "Ad Failed to Load: ${adError.message}"
-            }
-
-            override fun onAdLoaded(ad: RewardedAd) {
-                Log.d(TAG, "Ad was loaded.")
-                rewardedAd = ad
-                adStatus = "Ad Ready"
-            }
-        })
-    }
 }
