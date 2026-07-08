@@ -10,6 +10,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -194,6 +195,22 @@ fun GameScreen(
                 reason = viewModel.lastGameOverReason ?: GameOverReason.TOO_EARLY,
                 onRestart = { viewModel.restartGame() },
                 modifier = Modifier.testTag("game_over_overlay")
+            )
+        }
+
+        // Continue / Game Over temporary overlay screen
+        AnimatedVisibility(
+            visible = viewModel.gameState == GameState.CONTINUE_PROMPT,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            ContinuePromptOverlay(
+                score = viewModel.score,
+                countdownSeconds = viewModel.countdownSeconds,
+                isAdReady = viewModel.isAdReady,
+                onWatchAd = { viewModel.requestAdShow() },
+                onSkip = { viewModel.skipAndRestart() },
+                modifier = Modifier.testTag("continue_prompt_overlay")
             )
         }
     }
@@ -500,6 +517,128 @@ fun GameOverOverlay(
                         fontFamily = FontFamily.SansSerif,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        letterSpacing = 1.sp
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ContinuePromptOverlay(
+    score: Int,
+    countdownSeconds: Int,
+    isAdReady: Boolean,
+    onWatchAd: () -> Unit,
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = Color.Black.copy(alpha = 0.9f),
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "CONTINUE?",
+                style = androidx.compose.material3.MaterialTheme.typography.displaySmall.copy(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    letterSpacing = 2.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Large Countdown Circle
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.White.copy(alpha = 0.1f), CircleShape)
+                    .border(width = 4.dp, color = ButtonOrange, shape = CircleShape)
+            ) {
+                Text(
+                    text = "$countdownSeconds",
+                    style = androidx.compose.material3.MaterialTheme.typography.displayMedium.copy(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Keep your score of $score and continue playing!",
+                textAlign = TextAlign.Center,
+                style = androidx.compose.material3.MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = FontFamily.SansSerif,
+                    color = Color.White.copy(alpha = 0.8f),
+                    lineHeight = 24.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            if (isAdReady) {
+                Button(
+                    onClick = onWatchAd,
+                    colors = ButtonDefaults.buttonColors(containerColor = ButtonOrange),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp)
+                        .testTag("watch_ad_button")
+                ) {
+                    Text(
+                        text = "🎬 WATCH AD TO CONTINUE",
+                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+            } else {
+                Text(
+                    text = "Loading Ad...",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = onSkip,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.15f)),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(horizontal = 16.dp)
+                    .testTag("skip_restart_button")
+            ) {
+                Text(
+                    text = "NO THANKS, RESTART",
+                    style = androidx.compose.material3.MaterialTheme.typography.titleSmall.copy(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.8f),
                         letterSpacing = 1.sp
                     )
                 )

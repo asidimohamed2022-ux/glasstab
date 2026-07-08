@@ -17,6 +17,7 @@ import kotlin.random.Random
 enum class GameState {
     PLAYING,
     DRAINING,
+    CONTINUE_PROMPT,
     GAME_OVER
 }
 
@@ -51,6 +52,13 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
     var showPerfectEffect by mutableStateOf(false)
         private set
+
+    var countdownSeconds by mutableStateOf(5)
+        private set
+
+    var isAdReady by mutableStateOf(false)
+
+    var onShowAdRequested: (() -> Unit)? = null
 
     // Tolerance configuration: 4.5% of the glass height
     val tolerance = 0.045f
@@ -157,7 +165,56 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private fun triggerGameOver(reason: GameOverReason) {
         fillJob?.cancel()
         lastGameOverReason = reason
-        gameState = GameState.GAME_OVER
+        gameState = GameState.CONTINUE_PROMPT
+        startCountdown()
+    }
+
+    private var countdownJob: Job? = null
+
+    private fun startCountdown() {
+        countdownSeconds = 5
+        countdownJob?.cancel()
+        countdownJob = viewModelScope.launch {
+            while (countdownSeconds > 0 && gameState == GameState.CONTINUE_PROMPT) {
+                delay(1000)
+                countdownSeconds--
+            }
+            if (gameState == GameState.CONTINUE_PROMPT) {
+                goToGameOver()
+            }
+        }
+    }
+
+    fun goToGameOver() {
+        countdownJob?.cancel()
+        viewModelScope.launch {
+            if (score > highScore) {
+                highScore = score
+                repository.saveHighScore(highScore)
+            }
+            gameState = GameState.GAME_OVER
+        }
+    }
+
+    fun skipAndRestart() {
+        countdownJob?.cancel()
+        score = 0
+        currentLevel = 0.0f
+        targetLevel = generateRandomTarget()
+        showPerfectEffect = false
+        lastGameOverReason = null
+        gameState = GameState.PLAYING
+    }
+
+    fun requestAdShow() {
+        onShowAdRequested?.invoke()
+    }
+
+    fun onAdRewardCompleted() {
+        countdownJob?.cancel()
+        currentLevel = 0.0f
+        isPressing = false
+        gameState = GameState.PLAYING
     }
 
     fun restartGame() {
